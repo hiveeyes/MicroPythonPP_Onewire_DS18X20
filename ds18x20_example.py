@@ -8,7 +8,9 @@ ow = OneWire(Pin('P10'))
 temp = DS18X20(ow)
 
 while True:
-    temp.start_conversion()
-    time.sleep(1)
-    print(temp.read_temp_async())
+    for rom in temp.roms:
+        temp.start_conversion(rom)
+        time.sleep(1)
+        print(temp.read_temp_async(rom), end=" ")
+    print()
     time.sleep(1)
