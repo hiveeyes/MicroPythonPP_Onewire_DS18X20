@@ -73,6 +73,10 @@ class OneWire:
             buf[i] = self.read_byte()
         return buf
 
+    def read_into(self, buf):
+        for i in range(len(buf)):
+            buf[i] = self.read_byte()
+
     def write_bit(self, value):
         sleep_us = time.sleep_us
         pin = self.pin
