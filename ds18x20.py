@@ -43,11 +43,6 @@ class DS18X20(object):
         """
         self.ow = onewire
         self.roms = [rom for rom in self.ow.scan() if rom[0] in (0x10, 0x22, 0x28)]
-        try:
-            1/1
-            self.fp = True
-        except TypeError:
-            self.fp = False # floatingpoint not supported
 
     def isbusy(self):
         """
@@ -114,19 +109,13 @@ class DS18X20(object):
                 temp_read = temp_lsb >> 1  # truncate bit 0 by shifting
             count_remain = data[6]
             count_per_c = data[7]
-            if self.fp:
-                return temp_read - 25 + (count_per_c - count_remain) / count_per_c
-            else:
-                return 100 * temp_read - 25 + (count_per_c - count_remain) // count_per_c
+            return temp_read - 25 + (count_per_c - count_remain) / count_per_c
         elif rom0 == 0x28:
             temp = None
             # Mask power-on reset value 0550h (85°C)
             if temp_msb == 0x05 and temp_lsb == 0x50:
                 return None
-            if self.fp:
-                temp = (temp_msb << 8 | temp_lsb) / 16
-            else:
-                temp = (temp_msb << 8 | temp_lsb) * 100 // 16
+            temp = (temp_msb << 8 | temp_lsb) / 16
             if (temp_msb & 0xf8) == 0xf8: # for negative temperature
                 temp -= 0x1000
             return temp
