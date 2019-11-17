@@ -25,7 +25,11 @@ while True:
     time.sleep(1)
 
 """
+from micropython import const
 
+_CONVERT = const(0x44)
+_RD_SCRATCH = const(0xbe)
+_WR_SCRATCH = const(0x4e)
 
 class DS18X20(object):
     def __init__(self, onewire):
@@ -57,6 +61,7 @@ class DS18X20(object):
         Start the temp conversion on one DS18x20 device.
         Pass the 8-byte bytes object with the ROM of the specific device you want to read.
         If only one DS18x20 device is attached to the bus you may omit the rom parameter.
+        If the list of roms is supplied, conversion is started for all devices.
         """
         if (rom is None) and (len(self.roms) == 1):
             rom = self.roms[0]
@@ -65,8 +70,11 @@ class DS18X20(object):
 
         ow = self.ow
         ow.reset()
-        ow.select_rom(rom)
-        ow.write_byte(0x44)  # Convert Temp
+        if rom is self.roms: 
+            ow.write_byte(ow.CMD_SKIPROM)
+        else:
+            ow.select_rom(rom)
+        ow.write_byte(_CONVERT)  # Convert Temp
 
     def read_temp_async(self, rom=None):
         """
@@ -84,7 +92,7 @@ class DS18X20(object):
         ow = self.ow
         ow.reset()
         ow.select_rom(rom)
-        ow.write_byte(0xbe)  # Read scratch
+        ow.write_byte(_RD_SCRATCH)  # Read scratch
         data = ow.read_bytes(9)
         if ow.crc8(data) == 0:
             return self.convert_temp(rom[0], data)
